@@ -51,37 +51,130 @@ public class JavetProxyPluginList extends BaseJavetProxyPluginSingle<List<Object
      * @since 3.0.4
      */
     public static final String NAME = List.class.getName();
+    /**
+     * The JavaScript method name 'at'.
+     */
     protected static final String AT = "at";
+    /**
+     * The JavaScript method name 'concat'.
+     */
     protected static final String CONCAT = "concat";
+    /**
+     * The JavaScript method name 'copyWithin'.
+     */
     protected static final String COPY_WITHIN = "copyWithin";
+    /**
+     * The JavaScript method name 'entries'.
+     */
     protected static final String ENTRIES = "entries";
+    /**
+     * The error message for invalid target object.
+     */
     protected static final String ERROR_TARGET_OBJECT_MUST_BE_AN_INSTANCE_OF_LIST =
             "Target object must be an instance of List.";
+    /**
+     * The JavaScript method name 'every'.
+     */
     protected static final String EVERY = "every";
+    /**
+     * The JavaScript method name 'fill'.
+     */
     protected static final String FILL = "fill";
+    /**
+     * The JavaScript method name 'filter'.
+     */
     protected static final String FILTER = "filter";
+    /**
+     * The JavaScript method name 'find'.
+     */
     protected static final String FIND = "find";
+    /**
+     * The JavaScript method name 'findIndex'.
+     */
     protected static final String FIND_INDEX = "findIndex";
+    /**
+     * The JavaScript method name 'findLast'.
+     */
     protected static final String FIND_LAST = "findLast";
+    /**
+     * The JavaScript method name 'findLastIndex'.
+     */
     protected static final String FIND_LAST_INDEX = "findLastIndex";
+    /**
+     * The JavaScript method name 'flat'.
+     */
     protected static final String FLAT = "flat";
+    /**
+     * The JavaScript method name 'flatMap'.
+     */
     protected static final String FLAT_MAP = "flatMap";
+    /**
+     * The JavaScript method name 'forEach'.
+     */
     protected static final String FOR_EACH = "forEach";
+    /**
+     * The JavaScript method name 'includes'.
+     */
     protected static final String INCLUDES = "includes";
+    /**
+     * The JavaScript method name 'indexOf'.
+     */
     protected static final String INDEX_OF = "indexOf";
+    /**
+     * The JavaScript method name 'join'.
+     */
     protected static final String JOIN = "join";
+    /**
+     * The JavaScript method name 'keys'.
+     */
     protected static final String KEYS = "keys";
+    /**
+     * The JavaScript method name 'lastIndexOf'.
+     */
     protected static final String LAST_INDEX_OF = "lastIndexOf";
+    /**
+     * The JavaScript property name 'length'.
+     */
     protected static final String LENGTH = "length";
+    /**
+     * The JavaScript method name 'map'.
+     */
     protected static final String MAP = "map";
+    /**
+     * The JavaScript method name 'pop'.
+     */
     protected static final String POP = "pop";
+    /**
+     * The JavaScript method name 'push'.
+     */
     protected static final String PUSH = "push";
+    /**
+     * The JavaScript method name 'reduce'.
+     */
     protected static final String REDUCE = "reduce";
+    /**
+     * The JavaScript method name 'reduceRight'.
+     */
     protected static final String REDUCE_RIGHT = "reduceRight";
+    /**
+     * The JavaScript method name 'reverse'.
+     */
     protected static final String REVERSE = "reverse";
+    /**
+     * The JavaScript method name 'shift'.
+     */
     protected static final String SHIFT = "shift";
+    /**
+     * The JavaScript method name 'slice'.
+     */
     protected static final String SLICE = "slice";
+    /**
+     * The JavaScript method name 'some'.
+     */
     protected static final String SOME = "some";
+    /**
+     * The JavaScript method name 'sort'.
+     */
     protected static final String SORT = "sort";
     /**
      * The constant DEFAULT_PROXYABLE_METHODS.
@@ -90,12 +183,37 @@ public class JavetProxyPluginList extends BaseJavetProxyPluginSingle<List<Object
      */
     protected static final String[] DEFAULT_PROXYABLE_METHODS = new String[]{
             FOR_EACH, INDEX_OF, LAST_INDEX_OF, SORT, TO_STRING};
+    /**
+     * The JavaScript method name 'splice'.
+     */
     protected static final String SPLICE = "splice";
+    /**
+     * The JavaScript method name 'toLocaleString'.
+     */
+    protected static final String TO_LOCALE_STRING = "toLocaleString";
+    /**
+     * The JavaScript method name 'toReversed'.
+     */
     protected static final String TO_REVERSED = "toReversed";
+    /**
+     * The JavaScript method name 'toSorted'.
+     */
     protected static final String TO_SORTED = "toSorted";
+    /**
+     * The JavaScript method name 'toSpliced'.
+     */
     protected static final String TO_SPLICED = "toSpliced";
+    /**
+     * The JavaScript method name 'unshift'.
+     */
     protected static final String UNSHIFT = "unshift";
+    /**
+     * The JavaScript method name 'values'.
+     */
     protected static final String VALUES = "values";
+    /**
+     * The JavaScript method name 'with'.
+     */
     protected static final String WITH = "with";
     private static final JavetProxyPluginList instance = new JavetProxyPluginList();
     /**
@@ -105,6 +223,9 @@ public class JavetProxyPluginList extends BaseJavetProxyPluginSingle<List<Object
      */
     protected final Set<String> proxyableMethods;
 
+    /**
+     * Instantiates a new Javet proxy plugin for {@link java.util.List} with default proxyable methods.
+     */
     public JavetProxyPluginList() {
         super();
         proxyableMethods = SimpleSet.of(DEFAULT_PROXYABLE_METHODS);
@@ -140,6 +261,7 @@ public class JavetProxyPluginList extends BaseJavetProxyPluginSingle<List<Object
         proxyGetByStringMap.put(SORT, this::sort);
         proxyGetByStringMap.put(SPLICE, this::splice);
         proxyGetByStringMap.put(TO_JSON, this::toJSON);
+        proxyGetByStringMap.put(TO_LOCALE_STRING, this::toLocaleString);
         proxyGetByStringMap.put(TO_REVERSED, this::toReversed);
         proxyGetByStringMap.put(TO_SORTED, this::toSorted);
         proxyGetByStringMap.put(TO_SPLICED, this::toSpliced);
@@ -277,18 +399,21 @@ public class JavetProxyPluginList extends BaseJavetProxyPluginSingle<List<Object
                                 startIndex = 0;
                             }
                         }
-                        int endIndex = V8ValueUtils.asInt(v8Values, 2);
-                        if (endIndex < 0) {
-                            endIndex += length;
+                        int endIndex;
+                        if (v8Values.length < 3 || v8Values[2] == null
+                                || v8Values[2].isUndefined()) {
+                            endIndex = length;
+                        } else {
+                            endIndex = V8ValueUtils.asInt(v8Values, 2);
                             if (endIndex < 0) {
-                                endIndex = 0;
+                                endIndex += length;
+                                if (endIndex < 0) {
+                                    endIndex = 0;
+                                }
                             }
-                        }
-                        if (endIndex > length) {
-                            endIndex = length;
-                        }
-                        if (endIndex == 0) {
-                            endIndex = length;
+                            if (endIndex > length) {
+                                endIndex = length;
+                            }
                         }
                         if (targetIndex < length && startIndex < length && endIndex > startIndex) {
                             if (targetIndex + endIndex - startIndex > length) {
@@ -409,15 +534,21 @@ public class JavetProxyPluginList extends BaseJavetProxyPluginSingle<List<Object
                                 startIndex = 0;
                             }
                         }
-                        int endIndex = V8ValueUtils.asInt(v8Values, 2);
-                        if (endIndex < 0) {
-                            endIndex += length;
-                            if (endIndex < 0) {
-                                endIndex = 0;
-                            }
-                        }
-                        if (endIndex == 0) {
+                        int endIndex;
+                        if (v8Values.length < 3 || v8Values[2] == null
+                                || v8Values[2].isUndefined()) {
                             endIndex = length;
+                        } else {
+                            endIndex = V8ValueUtils.asInt(v8Values, 2);
+                            if (endIndex < 0) {
+                                endIndex += length;
+                                if (endIndex < 0) {
+                                    endIndex = 0;
+                                }
+                            }
+                            if (endIndex > length) {
+                                endIndex = length;
+                            }
                         }
                         if (startIndex < length && endIndex > startIndex) {
                             for (int i = startIndex; i < endIndex; ++i) {
@@ -888,7 +1019,10 @@ public class JavetProxyPluginList extends BaseJavetProxyPluginSingle<List<Object
         return Objects.requireNonNull(v8Runtime).createV8ValueFunction(new JavetCallbackContext(
                 JOIN, targetObject, JavetCallbackType.DirectCallNoThisAndResult,
                 (IJavetDirectCallable.NoThisAndResult<Exception>) (v8Values) -> {
-                    String delimiter = V8ValueUtils.asString(v8Values, 0, StringUtils.EMPTY);
+                    String delimiter = v8Values != null && v8Values.length > 0 && v8Values[0] != null
+                            && !v8Values[0].isUndefined()
+                            ? v8Values[0].toString()
+                            : ",";
                     String result = list.stream().map(Object::toString).collect(Collectors.joining(delimiter));
                     return v8Runtime.createV8ValueString(result);
                 }));
@@ -911,11 +1045,11 @@ public class JavetProxyPluginList extends BaseJavetProxyPluginSingle<List<Object
                 KEYS, targetObject, JavetCallbackType.DirectCallNoThisAndResult,
                 (IJavetDirectCallable.NoThisAndResult<Exception>) (v8Values) -> {
                     final int length = list.size();
-                    Object[] indexes = new Object[length];
+                    List<Object> keys = new ArrayList<>(length);
                     for (int i = 0; i < length; ++i) {
-                        indexes[i] = v8Runtime.createV8ValueInteger(i);
+                        keys.add(i);
                     }
-                    return V8ValueUtils.createV8ValueArray(v8Runtime, indexes);
+                    return PROXY_CONVERTER.toV8Value(v8Runtime, new V8VirtualIterator<>(keys.iterator()));
                 }));
     }
 
@@ -1155,7 +1289,7 @@ public class JavetProxyPluginList extends BaseJavetProxyPluginSingle<List<Object
     public V8Value reduceRight(V8Runtime v8Runtime, Object targetObject) throws JavetException {
         final List<Object> list = validateTargetObject(targetObject);
         return Objects.requireNonNull(v8Runtime).createV8ValueFunction(new JavetCallbackContext(
-                REDUCE, targetObject, JavetCallbackType.DirectCallThisAndResult,
+                REDUCE_RIGHT, targetObject, JavetCallbackType.DirectCallThisAndResult,
                 (IJavetDirectCallable.ThisAndResult<Exception>) (thisObject, v8Values) -> {
                     V8ValueFunction v8ValueFunction = V8ValueUtils.asV8ValueFunctionWithError(v8Runtime, v8Values, 0);
                     if (v8ValueFunction != null) {
@@ -1447,7 +1581,13 @@ public class JavetProxyPluginList extends BaseJavetProxyPluginSingle<List<Object
                                     V8ValueErrorType.RangeError,
                                     V8ErrorTemplate.rangeErrorStartIsOutOfRange(startIndex));
                         } else {
-                            int deleteCount = V8ValueUtils.asInt(v8Values, 1);
+                            int deleteCount;
+                            if (v8Values.length < 2 || v8Values[1] == null
+                                    || v8Values[1].isUndefined()) {
+                                deleteCount = length - startIndex;
+                            } else {
+                                deleteCount = V8ValueUtils.asInt(v8Values, 1);
+                            }
                             deleteCount = Math.min(deleteCount, length - startIndex);
                             if (deleteCount > 0) {
                                 List<?> subList = list.subList(startIndex, startIndex + deleteCount);
@@ -1482,6 +1622,35 @@ public class JavetProxyPluginList extends BaseJavetProxyPluginSingle<List<Object
                 TO_JSON, targetObject, JavetCallbackType.DirectCallNoThisAndResult,
                 (IJavetDirectCallable.NoThisAndResult<Exception>) (v8Values) ->
                         V8ValueUtils.createV8ValueArray(v8Runtime, list.toArray())));
+    }
+
+    /**
+     * Polyfill Array.prototype.toLocaleString().
+     * The toLocaleString() method of Array instances returns a localized string representing
+     * the specified array and its elements.
+     *
+     * @param v8Runtime    the V8 runtime
+     * @param targetObject the target object
+     * @return the V8 value
+     * @throws JavetException the javet exception
+     * @since 5.0.6
+     */
+    public V8Value toLocaleString(V8Runtime v8Runtime, Object targetObject) throws JavetException {
+        final List<Object> list = validateTargetObject(targetObject);
+        return Objects.requireNonNull(v8Runtime).createV8ValueFunction(new JavetCallbackContext(
+                TO_LOCALE_STRING, targetObject, JavetCallbackType.DirectCallNoThisAndResult,
+                (IJavetDirectCallable.NoThisAndResult<Exception>) (v8Values) -> {
+                    try (V8ValueArray v8ValueArray =
+                                 V8ValueUtils.createV8ValueArray(v8Runtime, list.toArray())) {
+                        String localeString;
+                        if (v8Values != null && v8Values.length > 0) {
+                            localeString = v8ValueArray.invokeString(TO_LOCALE_STRING, (Object[]) v8Values);
+                        } else {
+                            localeString = v8ValueArray.invokeString(TO_LOCALE_STRING);
+                        }
+                        return v8Runtime.createV8ValueString(localeString);
+                    }
+                }));
     }
 
     /**
@@ -1578,7 +1747,13 @@ public class JavetProxyPluginList extends BaseJavetProxyPluginSingle<List<Object
                                     V8ValueErrorType.RangeError,
                                     V8ErrorTemplate.rangeErrorStartIsOutOfRange(startIndex));
                         } else {
-                            int deleteCount = V8ValueUtils.asInt(v8Values, 1);
+                            int deleteCount;
+                            if (v8Values.length < 2 || v8Values[1] == null
+                                    || v8Values[1].isUndefined()) {
+                                deleteCount = length - startIndex;
+                            } else {
+                                deleteCount = V8ValueUtils.asInt(v8Values, 1);
+                            }
                             deleteCount = Math.min(deleteCount, length - startIndex);
                             if (deleteCount > 0) {
                                 results.subList(startIndex, startIndex + deleteCount).clear();
@@ -1700,6 +1875,9 @@ public class JavetProxyPluginList extends BaseJavetProxyPluginSingle<List<Object
                 (IJavetDirectCallable.NoThisAndResult<Exception>) (v8Values) -> {
                     Object[] objects = list.toArray();
                     int index = V8ValueUtils.asInt(v8Values, 0);
+                    if (index < 0) {
+                        index += objects.length;
+                    }
                     if (index >= 0 && index < objects.length) {
                         objects[index] = v8Values.length > 1
                                 ? v8Values[1]

@@ -338,15 +338,39 @@ public class TestJavetProxyConverter extends BaseTestJavetRuntime {
             assertEquals(
                     "[\"1\",\"y\"]",
                     v8Runtime.getExecutor("JSON.stringify(stringArray.with(0, '1'))").executeString());
+            // with() negative index
+            assertEquals(
+                    "[1,\"9\"]",
+                    v8Runtime.getExecutor("JSON.stringify(intArray.with(-1, '9'))").executeString());
+            assertEquals(
+                    "[\"9\",2]",
+                    v8Runtime.getExecutor("JSON.stringify(intArray.with(-2, '9'))").executeString());
+            assertEquals(
+                    "[\"x\",\"9\"]",
+                    v8Runtime.getExecutor("JSON.stringify(stringArray.with(-1, '9'))").executeString());
+            assertEquals(
+                    "[\"9\",\"y\"]",
+                    v8Runtime.getExecutor("JSON.stringify(stringArray.with(-2, '9'))").executeString());
             // toString()
             assertEquals("1,2", v8Runtime.getExecutor("intArray.toString()").executeString());
             assertEquals("x,y", v8Runtime.getExecutor("stringArray.toString()").executeString());
+            // toLocaleString()
+            assertNotNull(v8Runtime.getExecutor("intArray.toLocaleString()").executeString());
+            assertNotNull(v8Runtime.getExecutor("stringArray.toLocaleString()").executeString());
+            assertEquals("function", v8Runtime.getExecutor("typeof intArray.toLocaleString").executeString());
             // values()
             assertEquals("1,2", v8Runtime.getExecutor("[...intArray.values()].toString()").executeString());
             assertEquals("x,y", v8Runtime.getExecutor("[...stringArray.values()].toString()").executeString());
             // keys()
             assertEquals("0,1", v8Runtime.getExecutor("[...intArray.keys()].toString()").executeString());
             assertEquals("0,1", v8Runtime.getExecutor("[...stringArray.keys()].toString()").executeString());
+            // keys() returns iterator (supports spread syntax / for...of)
+            assertEquals(
+                    "[0,1]",
+                    v8Runtime.getExecutor("JSON.stringify([...intArray.keys()])").executeString());
+            assertEquals(
+                    "[0,1]",
+                    v8Runtime.getExecutor("JSON.stringify([...stringArray.keys()])").executeString());
             // concat()
             assertEquals(
                     "[1,2,\"a\",\"b\",\"c\"]",
@@ -367,6 +391,14 @@ public class TestJavetProxyConverter extends BaseTestJavetRuntime {
             assertEquals(
                     "[\"x\",\"x\"]",
                     v8Runtime.getExecutor("JSON.stringify(stringArray.copyWithin(1))").executeString());
+            // copyWithin() with explicit end=0 should copy nothing
+            // Note: intArray is [1,1] after previous copyWithin(1), stringArray is [x,x]
+            assertEquals(
+                    "[1,1]",
+                    v8Runtime.getExecutor("JSON.stringify(intArray.copyWithin(0, 1, 0))").executeString());
+            assertEquals(
+                    "[\"x\",\"x\"]",
+                    v8Runtime.getExecutor("JSON.stringify(stringArray.copyWithin(0, 1, 0))").executeString());
             // fill()
             assertEquals(
                     "[3,3]",
@@ -386,6 +418,10 @@ public class TestJavetProxyConverter extends BaseTestJavetRuntime {
             assertEquals(
                     "[\"x\",\"y\"]",
                     v8Runtime.getExecutor("JSON.stringify(stringArray.fill('x').fill('y', 1))").executeString());
+            // fill() with explicit end=0 should fill nothing
+            assertEquals(
+                    "[1,2]",
+                    v8Runtime.getExecutor("JSON.stringify(intArray.fill(9, 0, 0))").executeString());
             // filter()
             assertEquals(
                     "[1]",
@@ -464,10 +500,15 @@ public class TestJavetProxyConverter extends BaseTestJavetRuntime {
             assertEquals(-1, v8Runtime.getExecutor("stringArray.lastIndexOf('y',0)").executeInteger());
             assertEquals(-1, v8Runtime.getExecutor("stringArray.lastIndexOf('a')").executeInteger());
             // join()
-            assertEquals("12", v8Runtime.getExecutor("intArray.join()").executeString());
+            assertEquals("1,2", v8Runtime.getExecutor("intArray.join()").executeString());
             assertEquals("1,2", v8Runtime.getExecutor("intArray.join(',')").executeString());
-            assertEquals("xy", v8Runtime.getExecutor("stringArray.join()").executeString());
+            assertEquals("12", v8Runtime.getExecutor("intArray.join('')").executeString());
+            assertEquals("1-2", v8Runtime.getExecutor("intArray.join('-')").executeString());
+            assertEquals("1,2", v8Runtime.getExecutor("intArray.join(undefined)").executeString());
+            assertEquals("x,y", v8Runtime.getExecutor("stringArray.join()").executeString());
             assertEquals("x,y", v8Runtime.getExecutor("stringArray.join(',')").executeString());
+            assertEquals("xy", v8Runtime.getExecutor("stringArray.join('')").executeString());
+            assertEquals("x-y", v8Runtime.getExecutor("stringArray.join('-')").executeString());
             // forEach()
             assertEquals(
                     "[\"10true\",\"21true\"]",
@@ -579,6 +620,13 @@ public class TestJavetProxyConverter extends BaseTestJavetRuntime {
             assertEquals(
                     "[\"x\",\"x\",\"y\"][\"x\",\"y\"]",
                     v8Runtime.getExecutor("JSON.stringify(stringArray.toSpliced(1,1,'x','y'))+JSON.stringify(stringArray)").executeString());
+            // toSpliced() with missing deleteCount should remove all from start
+            assertEquals(
+                    "[][1,2]",
+                    v8Runtime.getExecutor("JSON.stringify(intArray.toSpliced(0))+JSON.stringify(intArray)").executeString());
+            assertEquals(
+                    "[1][1,2]",
+                    v8Runtime.getExecutor("JSON.stringify(intArray.toSpliced(1))+JSON.stringify(intArray)").executeString());
             // Symbol.iterator
             assertEquals(
                     "[1,2]",
@@ -1236,12 +1284,29 @@ public class TestJavetProxyConverter extends BaseTestJavetRuntime {
             assertEquals(
                     "[\"1\",\"y\",\"z\"]",
                     v8Runtime.getExecutor("JSON.stringify(list.with(0, '1'))").executeString());
+            // with() negative index
+            assertEquals(
+                    "[\"x\",\"y\",\"9\"]",
+                    v8Runtime.getExecutor("JSON.stringify(list.with(-1, '9'))").executeString());
+            assertEquals(
+                    "[\"x\",\"9\",\"z\"]",
+                    v8Runtime.getExecutor("JSON.stringify(list.with(-2, '9'))").executeString());
+            assertEquals(
+                    "[\"9\",\"y\",\"z\"]",
+                    v8Runtime.getExecutor("JSON.stringify(list.with(-3, '9'))").executeString());
             // toString()
             assertEquals("x,y,z", v8Runtime.getExecutor("list.toString()").executeString());
+            // toLocaleString()
+            assertNotNull(v8Runtime.getExecutor("list.toLocaleString()").executeString());
+            assertEquals("function", v8Runtime.getExecutor("typeof list.toLocaleString").executeString());
             // values()
             assertEquals("x,y,z", v8Runtime.getExecutor("[...list.values()].toString()").executeString());
             // keys()
             assertEquals("0,1,2", v8Runtime.getExecutor("[...list.keys()].toString()").executeString());
+            // keys() returns iterator (supports spread syntax / for...of)
+            assertEquals(
+                    "[0,1,2]",
+                    v8Runtime.getExecutor("JSON.stringify([...list.keys()])").executeString());
             // concat()
             assertEquals(
                     "[\"x\",\"y\",\"z\",\"a\",\"b\",\"c\"]",
@@ -1259,6 +1324,11 @@ public class TestJavetProxyConverter extends BaseTestJavetRuntime {
             assertEquals(
                     "[\"x\",\"x\",\"y\"]",
                     v8Runtime.getExecutor("JSON.stringify(list.copyWithin(1, 0, 2))").executeString());
+            // copyWithin() with explicit end=0 should copy nothing
+            // Note: list is [x, x, y] after previous copyWithin(1, 0, 2)
+            assertEquals(
+                    "[\"x\",\"x\",\"y\"]",
+                    v8Runtime.getExecutor("JSON.stringify(list.copyWithin(0, 1, 0))").executeString());
             // fill()
             assertEquals(
                     "[\"1\",\"1\",\"1\"]",
@@ -1272,6 +1342,10 @@ public class TestJavetProxyConverter extends BaseTestJavetRuntime {
             assertEquals(
                     "[\"x\",\"y\",\"z\"]",
                     v8Runtime.getExecutor("JSON.stringify(list.fill('x').fill('y', 1, 2).fill('z', 2))").executeString());
+            // fill() with explicit end=0 should fill nothing
+            assertEquals(
+                    "[\"x\",\"y\",\"z\"]",
+                    v8Runtime.getExecutor("JSON.stringify(list.fill('9', 0, 0))").executeString());
             // filter()
             assertEquals(
                     "[\"x\",\"z\"]",
@@ -1315,8 +1389,11 @@ public class TestJavetProxyConverter extends BaseTestJavetRuntime {
             assertEquals(-1, v8Runtime.getExecutor("list.lastIndexOf('y',0)").executeInteger());
             assertEquals(-1, v8Runtime.getExecutor("list.lastIndexOf('1')").executeInteger());
             // join()
-            assertEquals("xyz", v8Runtime.getExecutor("list.join()").executeString());
+            assertEquals("x,y,z", v8Runtime.getExecutor("list.join()").executeString());
             assertEquals("x,y,z", v8Runtime.getExecutor("list.join(',')").executeString());
+            assertEquals("xyz", v8Runtime.getExecutor("list.join('')").executeString());
+            assertEquals("x-y-z", v8Runtime.getExecutor("list.join('-')").executeString());
+            assertEquals("x,y,z", v8Runtime.getExecutor("list.join(undefined)").executeString());
             // forEach()
             assertEquals(
                     "[\"x0true\",\"y1true\",\"z2true\"]",
@@ -1385,6 +1462,16 @@ public class TestJavetProxyConverter extends BaseTestJavetRuntime {
             assertEquals(
                     "[\"z\"][\"x\",\"x\",\"y\"]",
                     v8Runtime.getExecutor("JSON.stringify(list.splice(1,1,'x','y'))+JSON.stringify(list)").executeString());
+            // splice() with missing deleteCount should remove all from start
+            v8Runtime.getExecutor("list.clear(); list.push('a', 'b', 'c')").executeVoid();
+            assertEquals(
+                    "[\"a\",\"b\",\"c\"][]",
+                    v8Runtime.getExecutor("JSON.stringify(list.splice(0))+JSON.stringify(list)").executeString());
+            v8Runtime.getExecutor("list.push('a', 'b', 'c')").executeVoid();
+            assertEquals(
+                    "[\"b\",\"c\"][\"a\"]",
+                    v8Runtime.getExecutor("JSON.stringify(list.splice(1))+JSON.stringify(list)").executeString());
+            v8Runtime.getExecutor("list.clear(); list.push('x', 'y', 'z')").executeVoid();
             // sort()
             assertEquals("[]", v8Runtime.getExecutor("list.clear(); JSON.stringify(list.sort())").executeString());
             assertEquals("[1]", v8Runtime.getExecutor("list.push(1); JSON.stringify(list.sort())").executeString());
@@ -1414,6 +1501,13 @@ public class TestJavetProxyConverter extends BaseTestJavetRuntime {
             assertEquals(
                     "[\"x\",\"x\",\"y\",\"z\"][\"x\",\"y\",\"z\"]",
                     v8Runtime.getExecutor("JSON.stringify(list.toSpliced(1,1,'x','y'))+JSON.stringify(list)").executeString());
+            // toSpliced() with missing deleteCount should remove all from start
+            assertEquals(
+                    "[][\"x\",\"y\",\"z\"]",
+                    v8Runtime.getExecutor("JSON.stringify(list.toSpliced(0))+JSON.stringify(list)").executeString());
+            assertEquals(
+                    "[\"x\"][\"x\",\"y\",\"z\"]",
+                    v8Runtime.getExecutor("JSON.stringify(list.toSpliced(1))+JSON.stringify(list)").executeString());
             // Symbol.iterator
             assertEquals(
                     "[\"x\",\"y\",\"z\"]",
@@ -1550,6 +1644,8 @@ public class TestJavetProxyConverter extends BaseTestJavetRuntime {
             // has()
             assertTrue(v8Runtime.getExecutor("map.has('x')").executeBoolean());
             assertFalse(v8Runtime.getExecutor("map.has('1')").executeBoolean());
+            // has() with no arguments
+            assertFalse(v8Runtime.getExecutor("map.has()").executeBoolean());
             // entries()
             assertEquals(
                     "[[\"x\",1],[\"y\",\"2\"],[\"z\",\"4\"]]",
@@ -1566,12 +1662,26 @@ public class TestJavetProxyConverter extends BaseTestJavetRuntime {
             assertEquals(
                     "[\"1xtrue\",\"2ytrue\",\"4ztrue\"]",
                     v8Runtime.getExecutor("const f = []; map.forEach((v,k,m)=>f.push(v+k+(m===map))); JSON.stringify(f);").executeString());
+            // forEach() with thisArg
+            assertEquals(
+                    "[\"1x_ctx\",\"2y_ctx\",\"4z_ctx\"]",
+                    v8Runtime.getExecutor("const f2 = []; const ctx = {s:'_ctx'}; map.forEach(function(v,k) { f2.push(v+k+this.s); }, ctx); JSON.stringify(f2);").executeString());
+            // forEach() with no callback — should not throw
+            v8Runtime.getExecutor("try { map.forEach(); } catch(e) {}").executeVoid();
             // delete
             assertTrue(v8Runtime.getExecutor("delete map['x']").executeBoolean());
             assertFalse(map.containsKey("x"));
             // delete()
             assertTrue(v8Runtime.getExecutor("map.delete('y')").executeBoolean());
             assertFalse(map.containsKey("y"));
+            // delete() non-existent key
+            assertFalse(v8Runtime.getExecutor("map.delete('nonexistent')").executeBoolean());
+            // delete() with no arguments
+            assertFalse(v8Runtime.getExecutor("map.delete()").executeBoolean());
+            // get() on remaining single-entry map
+            assertEquals("4", v8Runtime.getExecutor("map.get('z')").executeString());
+            // get() with no arguments
+            assertTrue(v8Runtime.getExecutor("map.get() === undefined").executeBoolean());
             // toString()
             assertEquals("[object Map]", v8Runtime.getExecutor("map.toString()").executeString());
             // toJSON()
@@ -1589,6 +1699,31 @@ public class TestJavetProxyConverter extends BaseTestJavetRuntime {
             // clear()
             v8Runtime.getExecutor("map.clear()").executeVoid();
             assertEquals(0, v8Runtime.getExecutor("map.size").executeInteger());
+            // Operations on empty map after clear
+            assertTrue(v8Runtime.getExecutor("map.get('z') === undefined").executeBoolean());
+            assertFalse(v8Runtime.getExecutor("map.has('z')").executeBoolean());
+            assertFalse(v8Runtime.getExecutor("map.delete('z')").executeBoolean());
+            assertEquals("[]", v8Runtime.getExecutor("JSON.stringify([...map.entries()])").executeString());
+            assertEquals("[]", v8Runtime.getExecutor("JSON.stringify([...map.keys()])").executeString());
+            assertEquals("[]", v8Runtime.getExecutor("JSON.stringify([...map.values()])").executeString());
+            assertEquals("[]", v8Runtime.getExecutor("JSON.stringify([...map[Symbol.iterator]()])").executeString());
+            assertEquals("[object Map]", v8Runtime.getExecutor("map.toString()").executeString());
+            assertEquals("{}", v8Runtime.getExecutor("JSON.stringify(map)").executeString());
+            // forEach on empty map — callback should never be called
+            assertEquals("[]", v8Runtime.getExecutor("const f3 = []; map.forEach((v,k)=>f3.push(k)); JSON.stringify(f3);").executeString());
+            // set() on empty map re-populates it
+            assertTrue(v8Runtime.getExecutor("map.set('a', 1) === map").executeBoolean());
+            assertEquals(1, v8Runtime.getExecutor("map.size").executeInteger());
+            assertEquals(1, v8Runtime.getExecutor("map.get('a')").executeInteger());
+            // set() with null value
+            assertTrue(v8Runtime.getExecutor("map.set('b', null) === map").executeBoolean());
+            assertTrue(v8Runtime.getExecutor("map.get('b') === null").executeBoolean());
+            // set() overwrite existing key
+            assertTrue(v8Runtime.getExecutor("map.set('a', 99) === map").executeBoolean());
+            assertEquals(99, v8Runtime.getExecutor("map.get('a')").executeInteger());
+            // Chained set() calls
+            assertTrue(v8Runtime.getExecutor("map.set('c', 3).set('d', 4) === map").executeBoolean());
+            assertEquals(4, v8Runtime.getExecutor("map.size").executeInteger());
             v8Runtime.getGlobalObject().delete("map");
         } finally {
             javetProxyConverter.getConfig().setProxyMapEnabled(false);
@@ -1772,6 +1907,75 @@ public class TestJavetProxyConverter extends BaseTestJavetRuntime {
             assertEquals(
                     "[\"xxtrue\",\"yytrue\",\"zztrue\"]",
                     v8Runtime.getExecutor("const f = []; set.forEach((v,k,s)=>f.push(k+v+(s===set))); JSON.stringify(f.sort())").executeString());
+            // ES2025 Set methods
+            Set<String> set2 = SimpleSet.of("y", "z", "w");
+            v8Runtime.getGlobalObject().set("set2", set2);
+            // difference()
+            assertEquals(
+                    "[\"x\"]",
+                    v8Runtime.getExecutor(
+                            "JSON.stringify([...set.difference(set2)].sort())").executeString());
+            // difference() — other has no overlap
+            assertEquals(
+                    "[\"x\",\"y\",\"z\"]",
+                    v8Runtime.getExecutor(
+                            "(() => { const s = new Set(['q']); return JSON.stringify([...set.difference(s)].sort()); })()").executeString());
+            // difference() — empty result
+            assertEquals(
+                    "[]",
+                    v8Runtime.getExecutor(
+                            "JSON.stringify([...set.difference(set)])").executeString());
+            // intersection()
+            assertEquals(
+                    "[\"y\",\"z\"]",
+                    v8Runtime.getExecutor(
+                            "JSON.stringify([...set.intersection(set2)].sort())").executeString());
+            // intersection() — no overlap
+            assertEquals(
+                    "[]",
+                    v8Runtime.getExecutor(
+                            "(() => { const s = new Set(['q']); return JSON.stringify([...set.intersection(s)]); })()").executeString());
+            // union()
+            assertEquals(
+                    "[\"w\",\"x\",\"y\",\"z\"]",
+                    v8Runtime.getExecutor(
+                            "JSON.stringify([...set.union(set2)].sort())").executeString());
+            // union() — with empty set
+            assertEquals(
+                    "[\"x\",\"y\",\"z\"]",
+                    v8Runtime.getExecutor(
+                            "(() => { const s = new Set(); return JSON.stringify([...set.union(s)].sort()); })()").executeString());
+            // symmetricDifference()
+            assertEquals(
+                    "[\"w\",\"x\"]",
+                    v8Runtime.getExecutor(
+                            "JSON.stringify([...set.symmetricDifference(set2)].sort())").executeString());
+            // symmetricDifference() — identical sets
+            assertEquals(
+                    "[]",
+                    v8Runtime.getExecutor(
+                            "JSON.stringify([...set.symmetricDifference(set)])").executeString());
+            // isSubsetOf()
+            assertFalse(v8Runtime.getExecutor("set.isSubsetOf(set2)").executeBoolean());
+            assertTrue(v8Runtime.getExecutor("set.isSubsetOf(set)").executeBoolean());
+            assertTrue(v8Runtime.getExecutor(
+                    "(() => { const s = new Set(['x','y','z','w']); return set.isSubsetOf(s); })()").executeBoolean());
+            // isSupersetOf()
+            assertFalse(v8Runtime.getExecutor("set.isSupersetOf(set2)").executeBoolean());
+            assertTrue(v8Runtime.getExecutor("set.isSupersetOf(set)").executeBoolean());
+            assertTrue(v8Runtime.getExecutor(
+                    "(() => { const s = new Set(['x']); return set.isSupersetOf(s); })()").executeBoolean());
+            // isDisjointFrom()
+            assertFalse(v8Runtime.getExecutor("set.isDisjointFrom(set2)").executeBoolean());
+            assertTrue(v8Runtime.getExecutor(
+                    "(() => { const s = new Set(['q']); return set.isDisjointFrom(s); })()").executeBoolean());
+            // isDisjointFrom() — empty set is disjoint from any set
+            assertTrue(v8Runtime.getExecutor(
+                    "(() => { const s = new Set(); return set.isDisjointFrom(s); })()").executeBoolean());
+            // original sets not mutated
+            assertEquals(3, v8Runtime.getExecutor("set.size").executeInteger());
+            assertEquals(3, v8Runtime.getExecutor("set2.size").executeInteger());
+            v8Runtime.getGlobalObject().delete("set2");
             // delete()
             assertTrue(v8Runtime.getExecutor("set.delete('z')").executeBoolean());
             assertFalse(v8Runtime.getExecutor("set.delete('z')").executeBoolean());
@@ -1846,6 +2050,155 @@ public class TestJavetProxyConverter extends BaseTestJavetRuntime {
         assertEquals(3, v8Runtime.getExecutor("a.callVarargsWithoutThis(1,2,3)").executeInteger());
         assertTrue(v8Runtime.getExecutor("a.callVarargsWithThis(1,2,3) === a").executeBoolean());
         v8Runtime.getGlobalObject().delete("a");
+    }
+
+    @Test
+    public void testV8VirtualIterator() throws JavetException {
+        try {
+            javetProxyConverter.getConfig().setProxyArrayEnabled(true);
+            javetProxyConverter.getConfig().setProxyListEnabled(true);
+            // Basic iteration with for...of
+            int[] intArray = new int[]{10, 20, 30};
+            v8Runtime.getGlobalObject().set("arr", intArray);
+            assertEquals(
+                    "[10,20,30]",
+                    v8Runtime.getExecutor("JSON.stringify([...arr])").executeString());
+            // keys() iterator: for...of
+            assertEquals(
+                    "[0,1,2]",
+                    v8Runtime.getExecutor("JSON.stringify([...arr.keys()])").executeString());
+            // entries() iterator: for...of
+            assertEquals(
+                    "[[0,10],[1,20],[2,30]]",
+                    v8Runtime.getExecutor("JSON.stringify([...arr.entries()])").executeString());
+            // values() iterator: for...of
+            assertEquals(
+                    "[10,20,30]",
+                    v8Runtime.getExecutor("JSON.stringify([...arr.values()])").executeString());
+            // Iterator protocol: next() returns {value, done}
+            assertEquals(
+                    10,
+                    v8Runtime.getExecutor("arr.values().next().value").executeInteger());
+            assertFalse(
+                    v8Runtime.getExecutor("arr.values().next().done").executeBoolean());
+            // Chained next() calls
+            assertEquals(
+                    20,
+                    v8Runtime.getExecutor("arr.values().next().next().value").executeInteger());
+            assertFalse(
+                    v8Runtime.getExecutor("arr.values().next().next().done").executeBoolean());
+            assertEquals(
+                    30,
+                    v8Runtime.getExecutor("arr.values().next().next().next().value").executeInteger());
+            assertFalse(
+                    v8Runtime.getExecutor("arr.values().next().next().next().done").executeBoolean());
+            // Exhausted iterator
+            assertTrue(
+                    v8Runtime.getExecutor("arr.values().next().next().next().next().done").executeBoolean());
+            assertTrue(
+                    v8Runtime.getExecutor("arr.values().next().next().next().next().value").execute().isUndefined());
+            // Calling next() after exhaustion still returns done=true
+            assertTrue(
+                    v8Runtime.getExecutor("arr.values().next().next().next().next().next().done").executeBoolean());
+            // Empty array iterator
+            v8Runtime.getGlobalObject().set("empty", new int[0]);
+            assertTrue(
+                    v8Runtime.getExecutor("empty.values().next().done").executeBoolean());
+            assertTrue(
+                    v8Runtime.getExecutor("empty.values().next().value").execute().isUndefined());
+            assertEquals(
+                    "[]",
+                    v8Runtime.getExecutor("JSON.stringify([...empty])").executeString());
+            v8Runtime.getGlobalObject().delete("empty");
+            // Symbol.iterator returns the iterator itself (iterable protocol)
+            assertEquals(
+                    "[10,20,30]",
+                    v8Runtime.getExecutor("JSON.stringify([...arr[Symbol.iterator]()])").executeString());
+            // Iterator is iterable: Symbol.iterator on the iterator returns itself
+            assertEquals(
+                    "[10,20,30]",
+                    v8Runtime.getExecutor(
+                            "(() => { const it = arr.values(); return JSON.stringify([...it[Symbol.iterator]()]); })()").executeString());
+            // return() method: signals early termination
+            assertTrue(
+                    v8Runtime.getExecutor(
+                            "(() => { const it = arr.values(); it.next(); " +
+                                    "return typeof it.return === 'function'; })()").executeBoolean());
+            assertTrue(
+                    v8Runtime.getExecutor(
+                            "(() => { const it = arr.values(); it.next(); " +
+                                    "it.return(); return it.done; })()").executeBoolean());
+            // throw() method exists
+            assertTrue(
+                    v8Runtime.getExecutor(
+                            "(() => { const it = arr.values(); return typeof it.throw === 'function'; })()").executeBoolean());
+            assertTrue(
+                    v8Runtime.getExecutor(
+                            "(() => { const it = arr.values(); it.next(); " +
+                                    "it.throw(); return it.done; })()").executeBoolean());
+            // for...of with break triggers return()
+            assertEquals(
+                    "[10]",
+                    v8Runtime.getExecutor(
+                            "(() => { const result = []; for (const v of arr) { result.push(v); break; } " +
+                                    "return JSON.stringify(result); })()").executeString());
+            // Symbol.toStringTag
+            assertEquals(
+                    "Iterator",
+                    v8Runtime.getExecutor("arr.values()[Symbol.toStringTag]").executeString());
+            // entries() iterator toStringTag
+            assertEquals(
+                    "Iterator",
+                    v8Runtime.getExecutor("arr.entries()[Symbol.toStringTag]").executeString());
+            // keys() iterator toStringTag
+            assertEquals(
+                    "Iterator",
+                    v8Runtime.getExecutor("arr.keys()[Symbol.toStringTag]").executeString());
+            // List iterator
+            List<Object> list = new ArrayList<>(Arrays.asList("a", "b", "c"));
+            v8Runtime.getGlobalObject().set("list", list);
+            assertEquals(
+                    "[\"a\",\"b\",\"c\"]",
+                    v8Runtime.getExecutor("JSON.stringify([...list.values()])").executeString());
+            assertEquals(
+                    "[0,1,2]",
+                    v8Runtime.getExecutor("JSON.stringify([...list.keys()])").executeString());
+            assertEquals(
+                    "[[0,\"a\"],[1,\"b\"],[2,\"c\"]]",
+                    v8Runtime.getExecutor("JSON.stringify([...list.entries()])").executeString());
+            // List iterator next() protocol
+            assertEquals(
+                    "a",
+                    v8Runtime.getExecutor("list.values().next().value").executeString());
+            assertFalse(
+                    v8Runtime.getExecutor("list.values().next().done").executeBoolean());
+            // List iterator return() and throw()
+            assertTrue(
+                    v8Runtime.getExecutor(
+                            "(() => { const it = list.values(); return typeof it.return === 'function'; })()").executeBoolean());
+            assertTrue(
+                    v8Runtime.getExecutor(
+                            "(() => { const it = list.values(); return typeof it.throw === 'function'; })()").executeBoolean());
+            // Single element iterator
+            v8Runtime.getGlobalObject().set("single", new int[]{42});
+            assertEquals(
+                    42,
+                    v8Runtime.getExecutor("single.values().next().value").executeInteger());
+            assertFalse(
+                    v8Runtime.getExecutor("single.values().next().done").executeBoolean());
+            assertTrue(
+                    v8Runtime.getExecutor("single.values().next().next().done").executeBoolean());
+            assertEquals(
+                    "[42]",
+                    v8Runtime.getExecutor("JSON.stringify([...single])").executeString());
+            v8Runtime.getGlobalObject().delete("single");
+            v8Runtime.getGlobalObject().delete("list");
+            v8Runtime.getGlobalObject().delete("arr");
+        } finally {
+            v8Runtime.lowMemoryNotification();
+            javetProxyConverter.getConfig().setProxyArrayEnabled(false);
+            javetProxyConverter.getConfig().setProxyListEnabled(false);
+        }
     }
 
     @Test

@@ -2,6 +2,31 @@
 Release Notes 5.0.x
 ===================
 
+5.0.6
+-----
+
+* Upgraded Node.js to ``v24.14.1`` `(2026-03-24) <https://nodejs.org/en/blog/release/v24.14.1>`_
+* Upgraded V8 to ``v14.7.173.18`` (2026-04-07)
+* Upgraded Visual Studio 2026 to `v18.4.3 <https://learn.microsoft.com/en-us/visualstudio/releases/2026/release-notes#18.4.3>`_
+* Added ``builtInModuleResolution`` flag to ``NodeRuntimeOptions`` to switch between Javet's module resolver and Node.js's built-in module resolver for static ``import`` statements
+* Fixed ``join()`` in ``JavetProxyPluginArray`` and ``JavetProxyPluginList`` to default to ``","`` separator when called with no arguments, matching the JavaScript spec (previously defaulted to ``""``)
+* Fixed ``with()`` in ``JavetProxyPluginArray`` and ``JavetProxyPluginList`` to support negative indices (e.g. ``arr.with(-1, value)`` replaces the last element), matching the JavaScript spec
+* Fixed ``copyWithin()`` in ``JavetProxyPluginArray`` and ``JavetProxyPluginList`` to distinguish between an omitted ``end`` parameter (copies to the end of the array) and an explicit ``end`` of ``0`` (copies nothing)
+* Fixed ``keys()`` in ``JavetProxyPluginArray`` and ``JavetProxyPluginList`` to return an Array Iterator (``V8VirtualIterator``) instead of a plain array, consistent with ``entries()`` and ``values()``
+* Fixed ``reduceRight()`` in ``JavetProxyPluginArray`` and ``JavetProxyPluginList`` to register the callback context with the correct name ``"reduceRight"`` instead of ``"reduce"``
+* Added ``toLocaleString()`` to ``JavetProxyPluginArray`` and ``JavetProxyPluginList``, delegating to the native ``Array.prototype.toLocaleString`` with support for optional locale and options arguments
+* Added ``return()`` and ``throw()`` methods to ``V8VirtualIterator`` implementing the optional iterator protocol methods for early termination and error signaling
+* Added ``Symbol.toStringTag`` support to ``V8VirtualIterator`` returning ``"Iterator"``
+* Fixed ``fill()`` in ``JavetProxyPluginArray`` and ``JavetProxyPluginList`` to distinguish between an omitted ``end`` parameter (fills to the end) and an explicit ``end`` of ``0`` (fills nothing)
+* Fixed ``splice()`` in ``JavetProxyPluginList`` to remove all elements from ``start`` to the end when ``deleteCount`` is omitted (e.g. ``list.splice(0)`` removes everything), matching the JavaScript spec (previously removed nothing)
+* Fixed ``toSpliced()`` in ``JavetProxyPluginArray`` and ``JavetProxyPluginList`` to remove all elements from ``start`` to the end when ``deleteCount`` is omitted, matching the JavaScript spec
+* Added ES2025 Set methods to ``JavetProxyPluginSet``: ``difference()``, ``intersection()``, ``union()``, ``symmetricDifference()``, ``isSubsetOf()``, ``isSupersetOf()``, ``isDisjointFrom()``
+* Fixed ``entries()`` in ``JavetProxyPluginSet`` to capture the snapshot at call time instead of at property access time, consistent with ``values()``
+* Added ``toString(radix)`` polyfill to ``JavetProxyPluginDefault`` for ``BigInteger``, ``Long`` (via ``BigInt.prototype.toString``), ``Byte``, ``Double``, ``Float``, ``Integer``, ``Short`` (via ``Number.prototype.toString``)
+* Added ``toString()`` polyfill to ``JavetProxyPluginDefault`` for ``Boolean`` (via ``Boolean.prototype.toString``) and ``Character`` (via ``valueOf``)
+* Added ``Symbol.toPrimitive`` registration to ``JavetProxyPluginDefault`` for ``Boolean``, ``Byte``, ``Character``, ``Double``, ``Float``, ``Integer``, ``Long``, ``Short``, ``String``
+* Fixed ``Symbol.toPrimitive`` in ``BaseJavetProxyPlugin`` to handle ``Byte`` and ``Character`` for all hint types (number, default, boolean), preventing incorrect string concatenation in arithmetic expressions
+
 5.0.5
 -----
 

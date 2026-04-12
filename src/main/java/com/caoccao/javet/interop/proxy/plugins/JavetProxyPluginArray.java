@@ -53,27 +53,90 @@ public class JavetProxyPluginArray extends BaseJavetProxyPluginSingle<Object> {
      * @since 3.0.4
      */
     public static final String NAME = Object[].class.getName();
+    /**
+     * The JavaScript array method name {@code at}.
+     */
     protected static final String AT = "at";
+    /**
+     * The JavaScript array method name {@code concat}.
+     */
     protected static final String CONCAT = "concat";
+    /**
+     * The JavaScript array method name {@code copyWithin}.
+     */
     protected static final String COPY_WITHIN = "copyWithin";
+    /**
+     * The JavaScript array method name {@code entries}.
+     */
     protected static final String ENTRIES = "entries";
+    /**
+     * The error message indicating the target object must be an array.
+     */
     protected static final String ERROR_TARGET_OBJECT_MUST_BE_AN_ARRAY =
             "Target object must be an array.";
+    /**
+     * The JavaScript array method name {@code every}.
+     */
     protected static final String EVERY = "every";
+    /**
+     * The JavaScript array method name {@code fill}.
+     */
     protected static final String FILL = "fill";
+    /**
+     * The JavaScript array method name {@code filter}.
+     */
     protected static final String FILTER = "filter";
+    /**
+     * The JavaScript array method name {@code find}.
+     */
     protected static final String FIND = "find";
+    /**
+     * The JavaScript array method name {@code findIndex}.
+     */
     protected static final String FIND_INDEX = "findIndex";
+    /**
+     * The JavaScript array method name {@code findLast}.
+     */
     protected static final String FIND_LAST = "findLast";
+    /**
+     * The JavaScript array method name {@code findLastIndex}.
+     */
     protected static final String FIND_LAST_INDEX = "findLastIndex";
+    /**
+     * The JavaScript array method name {@code flat}.
+     */
     protected static final String FLAT = "flat";
+    /**
+     * The JavaScript array method name {@code flatMap}.
+     */
     protected static final String FLAT_MAP = "flatMap";
+    /**
+     * The JavaScript array method name {@code forEach}.
+     */
     protected static final String FOR_EACH = "forEach";
+    /**
+     * The JavaScript array method name {@code includes}.
+     */
     protected static final String INCLUDES = "includes";
+    /**
+     * The JavaScript array method name {@code indexOf}.
+     */
     protected static final String INDEX_OF = "indexOf";
+    /**
+     * The JavaScript array method name {@code join}.
+     */
     protected static final String JOIN = "join";
+    /**
+     * The JavaScript array method name {@code keys}.
+     */
     protected static final String KEYS = "keys";
+    /**
+     * The JavaScript array method name {@code lastIndexOf}.
+     */
     protected static final String LAST_INDEX_OF = "lastIndexOf";
+    /**
+     * The JavaScript array property name {@code length}.
+     */
     protected static final String LENGTH = "length";
     /**
      * The constant DEFAULT_PROXYABLE_METHODS.
@@ -82,22 +145,77 @@ public class JavetProxyPluginArray extends BaseJavetProxyPluginSingle<Object> {
      */
     protected static final String[] DEFAULT_PROXYABLE_METHODS = new String[]{
             LENGTH, TO_STRING};
+    /**
+     * The JavaScript array method name {@code map}.
+     */
     protected static final String MAP = "map";
+    /**
+     * The JavaScript array method name {@code pop}.
+     */
     protected static final String POP = "pop";
+    /**
+     * The JavaScript array method name {@code push}.
+     */
     protected static final String PUSH = "push";
+    /**
+     * The JavaScript array method name {@code reduce}.
+     */
     protected static final String REDUCE = "reduce";
+    /**
+     * The JavaScript array method name {@code reduceRight}.
+     */
     protected static final String REDUCE_RIGHT = "reduceRight";
+    /**
+     * The JavaScript array method name {@code reverse}.
+     */
     protected static final String REVERSE = "reverse";
+    /**
+     * The JavaScript array method name {@code shift}.
+     */
     protected static final String SHIFT = "shift";
+    /**
+     * The JavaScript array method name {@code slice}.
+     */
     protected static final String SLICE = "slice";
+    /**
+     * The JavaScript array method name {@code some}.
+     */
     protected static final String SOME = "some";
+    /**
+     * The JavaScript array method name {@code sort}.
+     */
     protected static final String SORT = "sort";
+    /**
+     * The JavaScript array method name {@code splice}.
+     */
     protected static final String SPLICE = "splice";
+    /**
+     * The JavaScript array method name {@code toLocaleString}.
+     */
+    protected static final String TO_LOCALE_STRING = "toLocaleString";
+    /**
+     * The JavaScript array method name {@code toReversed}.
+     */
     protected static final String TO_REVERSED = "toReversed";
+    /**
+     * The JavaScript array method name {@code toSorted}.
+     */
     protected static final String TO_SORTED = "toSorted";
+    /**
+     * The JavaScript array method name {@code toSpliced}.
+     */
     protected static final String TO_SPLICED = "toSpliced";
+    /**
+     * The JavaScript array method name {@code unshift}.
+     */
     protected static final String UNSHIFT = "unshift";
+    /**
+     * The JavaScript array method name {@code values}.
+     */
     protected static final String VALUES = "values";
+    /**
+     * The JavaScript array method name {@code with}.
+     */
     protected static final String WITH = "with";
     private static final JavetProxyPluginArray instance = new JavetProxyPluginArray();
     /**
@@ -107,6 +225,9 @@ public class JavetProxyPluginArray extends BaseJavetProxyPluginSingle<Object> {
      */
     protected final Set<String> proxyableMethods;
 
+    /**
+     * Instantiates a new Javet proxy plugin array.
+     */
     public JavetProxyPluginArray() {
         super();
         proxyableMethods = SimpleSet.of(DEFAULT_PROXYABLE_METHODS);
@@ -142,6 +263,7 @@ public class JavetProxyPluginArray extends BaseJavetProxyPluginSingle<Object> {
         proxyGetByStringMap.put(SORT, this::sort);
         proxyGetByStringMap.put(SPLICE, this::splice);
         proxyGetByStringMap.put(TO_JSON, this::toJSON);
+        proxyGetByStringMap.put(TO_LOCALE_STRING, this::toLocaleString);
         proxyGetByStringMap.put(TO_REVERSED, this::toReversed);
         proxyGetByStringMap.put(TO_SORTED, this::toSorted);
         proxyGetByStringMap.put(TO_SPLICED, this::toSpliced);
@@ -277,18 +399,21 @@ public class JavetProxyPluginArray extends BaseJavetProxyPluginSingle<Object> {
                                 startIndex = 0;
                             }
                         }
-                        int endIndex = V8ValueUtils.asInt(v8Values, 2);
-                        if (endIndex < 0) {
-                            endIndex += length;
+                        int endIndex;
+                        if (v8Values == null || v8Values.length < 3 || v8Values[2] == null
+                                || v8Values[2].isUndefined()) {
+                            endIndex = length;
+                        } else {
+                            endIndex = V8ValueUtils.asInt(v8Values, 2);
                             if (endIndex < 0) {
-                                endIndex = 0;
+                                endIndex += length;
+                                if (endIndex < 0) {
+                                    endIndex = 0;
+                                }
                             }
-                        }
-                        if (endIndex > length) {
-                            endIndex = length;
-                        }
-                        if (endIndex == 0) {
-                            endIndex = length;
+                            if (endIndex > length) {
+                                endIndex = length;
+                            }
                         }
                         if (targetIndex < length && startIndex < length && endIndex > startIndex) {
                             if (targetIndex + endIndex - startIndex > length) {
@@ -415,15 +540,21 @@ public class JavetProxyPluginArray extends BaseJavetProxyPluginSingle<Object> {
                                 startIndex = 0;
                             }
                         }
-                        int endIndex = V8ValueUtils.asInt(v8Values, 2);
-                        if (endIndex < 0) {
-                            endIndex += length;
-                            if (endIndex < 0) {
-                                endIndex = 0;
-                            }
-                        }
-                        if (endIndex == 0) {
+                        int endIndex;
+                        if (v8Values.length < 3 || v8Values[2] == null
+                                || v8Values[2].isUndefined()) {
                             endIndex = length;
+                        } else {
+                            endIndex = V8ValueUtils.asInt(v8Values, 2);
+                            if (endIndex < 0) {
+                                endIndex += length;
+                                if (endIndex < 0) {
+                                    endIndex = 0;
+                                }
+                            }
+                            if (endIndex > length) {
+                                endIndex = length;
+                            }
                         }
                         if (startIndex < length && endIndex > startIndex) {
                             for (int i = startIndex; i < endIndex; ++i) {
@@ -906,7 +1037,10 @@ public class JavetProxyPluginArray extends BaseJavetProxyPluginSingle<Object> {
         return Objects.requireNonNull(v8Runtime).createV8ValueFunction(new JavetCallbackContext(
                 JOIN, targetObject, JavetCallbackType.DirectCallNoThisAndResult,
                 (IJavetDirectCallable.NoThisAndResult<Exception>) (v8Values) -> {
-                    String delimiter = V8ValueUtils.asString(v8Values, 0, StringUtils.EMPTY);
+                    String delimiter = v8Values != null && v8Values.length > 0 && v8Values[0] != null
+                            && !v8Values[0].isUndefined()
+                            ? v8Values[0].toString()
+                            : ",";
                     String result = Stream.of(ArrayUtils.copyOf(targetObject))
                             .map(Object::toString)
                             .collect(Collectors.joining(delimiter));
@@ -931,11 +1065,11 @@ public class JavetProxyPluginArray extends BaseJavetProxyPluginSingle<Object> {
                 KEYS, targetObject, JavetCallbackType.DirectCallNoThisAndResult,
                 (IJavetDirectCallable.NoThisAndResult<Exception>) (v8Values) -> {
                     final int length = Array.getLength(targetObject);
-                    Object[] indexes = new Object[length];
+                    List<Object> keys = new ArrayList<>(length);
                     for (int i = 0; i < length; ++i) {
-                        indexes[i] = v8Runtime.createV8ValueInteger(i);
+                        keys.add(i);
                     }
-                    return V8ValueUtils.createV8ValueArray(v8Runtime, indexes);
+                    return PROXY_CONVERTER.toV8Value(v8Runtime, new V8VirtualIterator<>(keys.iterator()));
                 }));
     }
 
@@ -1172,7 +1306,7 @@ public class JavetProxyPluginArray extends BaseJavetProxyPluginSingle<Object> {
     public V8Value reduceRight(V8Runtime v8Runtime, Object targetObject) throws JavetException {
         validateTargetObject(targetObject);
         return Objects.requireNonNull(v8Runtime).createV8ValueFunction(new JavetCallbackContext(
-                REDUCE, targetObject, JavetCallbackType.DirectCallThisAndResult,
+                REDUCE_RIGHT, targetObject, JavetCallbackType.DirectCallThisAndResult,
                 (IJavetDirectCallable.ThisAndResult<Exception>) (thisObject, v8Values) -> {
                     V8ValueFunction v8ValueFunction = V8ValueUtils.asV8ValueFunctionWithError(v8Runtime, v8Values, 0);
                     if (v8ValueFunction != null) {
@@ -1470,6 +1604,36 @@ public class JavetProxyPluginArray extends BaseJavetProxyPluginSingle<Object> {
     }
 
     /**
+     * Polyfill Array.prototype.toLocaleString().
+     * The toLocaleString() method of Array instances returns a localized string representing
+     * the specified array and its elements. The elements are converted to strings using their
+     * toLocaleString methods and these strings are separated by a locale-specific string (such as a comma ",").
+     *
+     * @param v8Runtime    the V8 runtime
+     * @param targetObject the target object
+     * @return the V8 value
+     * @throws JavetException the javet exception
+     * @since 5.0.6
+     */
+    public V8Value toLocaleString(V8Runtime v8Runtime, Object targetObject) throws JavetException {
+        validateTargetObject(targetObject);
+        return Objects.requireNonNull(v8Runtime).createV8ValueFunction(new JavetCallbackContext(
+                TO_LOCALE_STRING, targetObject, JavetCallbackType.DirectCallNoThisAndResult,
+                (IJavetDirectCallable.NoThisAndResult<Exception>) (v8Values) -> {
+                    try (V8ValueArray v8ValueArray =
+                                 V8ValueUtils.createV8ValueArray(v8Runtime, ArrayUtils.copyOf(targetObject))) {
+                        String localeString;
+                        if (v8Values != null && v8Values.length > 0) {
+                            localeString = v8ValueArray.invokeString(TO_LOCALE_STRING, (Object[]) v8Values);
+                        } else {
+                            localeString = v8ValueArray.invokeString(TO_LOCALE_STRING);
+                        }
+                        return v8Runtime.createV8ValueString(localeString);
+                    }
+                }));
+    }
+
+    /**
      * Polyfill Array.prototype.toReversed().
      * The toReversed() method of Array instances is the copying counterpart of the reverse() method.
      * It returns a new array with the elements in reversed order.
@@ -1567,7 +1731,13 @@ public class JavetProxyPluginArray extends BaseJavetProxyPluginSingle<Object> {
                                     V8ValueErrorType.RangeError,
                                     V8ErrorTemplate.rangeErrorStartIsOutOfRange(startIndex));
                         } else {
-                            int deleteCount = V8ValueUtils.asInt(v8Values, 1);
+                            int deleteCount;
+                            if (v8Values.length < 2 || v8Values[1] == null
+                                    || v8Values[1].isUndefined()) {
+                                deleteCount = length - startIndex;
+                            } else {
+                                deleteCount = V8ValueUtils.asInt(v8Values, 1);
+                            }
                             deleteCount = Math.min(deleteCount, length - startIndex);
                             if (deleteCount > 0) {
                                 results.subList(startIndex, startIndex + deleteCount).clear();
@@ -1696,6 +1866,9 @@ public class JavetProxyPluginArray extends BaseJavetProxyPluginSingle<Object> {
                 (IJavetDirectCallable.NoThisAndResult<Exception>) (v8Values) -> {
                     Object[] objects = ArrayUtils.copyOf(targetObject);
                     int index = V8ValueUtils.asInt(v8Values, 0);
+                    if (index < 0) {
+                        index += objects.length;
+                    }
                     if (index >= 0 && index < objects.length) {
                         objects[index] = v8Values.length > 1
                                 ? v8Values[1]
